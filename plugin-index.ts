@@ -1,1 +1,1 @@
-export { ExamplePlugin } from "./example-plugin";
+export { LeappCodeArtifactPlugin } from "./leapp-codeartifact-maven-plugin";
