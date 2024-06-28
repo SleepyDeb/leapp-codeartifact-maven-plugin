@@ -68,22 +68,6 @@ export class CodeArtifactMavenInjector {
         });
     }
 
-    private async enumerateDomains() {
-        const domains = [] as codeartifact.DomainSummary[];
-
-        let nextToken = undefined as string | undefined;
-        do {
-            const result = await this._client.send(new codeartifact.ListDomainsCommand({
-                nextToken
-            }));
-
-            nextToken = result.nextToken;
-            domains.push(...result.domains!);
-        } while (nextToken)
-
-        return domains;
-    }
-
     private async enumerateRepositories() {
         const repositories = [] as codeartifact.RepositorySummary[];
 
@@ -242,6 +226,12 @@ export class CodeArtifactMavenInjector {
 
         if (!obj.settings.servers.server)
             obj.settings.servers.server = []
+
+        if (!obj.settings.activeProfiles)
+            obj.settings.activeProfiles = { activeProfile: [] }
+
+        if (!obj.settings.activeProfiles.activeProfile)
+            obj.settings.activeProfiles.activeProfile = [];
 
         return obj;
     }
