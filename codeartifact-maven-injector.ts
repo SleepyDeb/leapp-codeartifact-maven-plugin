@@ -12,8 +12,9 @@ const defaultXml = `<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xml
 const commentPropName = `<!--`;
 const mavenXmlParser = new XMLParser({
     ignoreAttributes: false,
-    isArray: (tagName) => ['server', 'profile', 'repository', 'profile'].includes(tagName),
-    commentPropName
+    isArray: (tagName) => ['server', 'profile', 'repository', 'profile', 'activeProfile', 'pluginRepository' ].includes(tagName),
+    commentPropName,
+    parseTagValue: true
 });
 const mavenXmlSerializer = new XMLBuilder({
     ignoreAttributes: false,
@@ -37,19 +38,30 @@ interface SettingsFile {
                 repositories?: {
                     repository?: {
                         id: string,
-                        name: string,
+                        url: string
+                    }[]
+                },
+                pluginRepositories?: {
+                    pluginRepository?: {
+                        id: string,
                         url: string
                     }[]
                 }
             }[]
+        },
+        activeProfiles?: {
+            activeProfile?: string[]
         }
     }
 };
 
 export class CodeArtifactMavenInjector {
     private _client: codeartifact.CodeartifactClient;
+    private _tokenCache: {
+        [domainName: string]: string
+    } = {}
 
-    constructor(credentials?: AwsCredentialIdentity, region?: string, private mavenProfile: string = 'default') {
+    constructor(credentials?: AwsCredentialIdentity, region?: string, private mavenProfile: string = 'codeartifact') {
         this._client = new codeartifact.CodeartifactClient({
             credentials,
             region
@@ -87,54 +99,84 @@ export class CodeArtifactMavenInjector {
         return repositories;
     }
 
+    public async getRepositoryDetails(repository: string, domain: string, domainOwner: string) {
+        const result = await this._client.send(new codeartifact.DescribeRepositoryCommand({
+            repository,
+            domain,
+            domainOwner
+        }));
+        const connections = result?.repository?.externalConnections ?? []
+        const connectionsName = connections.filter(conn => conn.packageFormat == 'maven').map(conn => conn.externalConnectionName);
+        return { connectionsName }
+    }
+
     public async introspectAccountAndInject() {
-        const domains = await this.enumerateDomains();
         const repositories = await this.enumerateRepositories();
-        const settings = await this.ensureMavenConfigFile();
-        this.sanitizeSettingObject(settings)
+        const conf = await this.ensureMavenConfigFile();        
+        this.sanitizeSettingObject(conf)
 
-        // Injecting Secrets
-        for (const domain of domains) {
-            const domainName = domain.name!;
-            const token = await this.generateDomainToken(domainName, domain.owner);
-            const server = settings.settings.servers.server.filter(s => s.id == domainName)[0];
+        const mavenProfile = this.mavenProfile;
+        const profile = this.ensureSettingsProfile(conf, this.mavenProfile);
 
-            if (!server) {
-                settings.settings.servers.server.push({
+        let registerdNewRepos = false;
+
+        // Inejecting repositories
+        for (const repository of repositories) {
+            const domainName = repository.domainName!;
+            const domainOwner = repository.domainOwner;
+            const repositoryName = repository.name!;
+
+            const url = await this.getRepositoryEndpoint(domainName, domainOwner, repositoryName)
+            const token = await this.generateDomainTokenCached(domainName, domainOwner);
+
+            const profileRepo = profile.repositories.repository.filter(r => r.id == repositoryName)[0];
+            if (!profileRepo) {
+                profile.repositories.repository.push({
+                    id: repositoryName,
+                    url
+                });
+                registerdNewRepos = true;
+            } else {
+                profileRepo.url = url;
+            }
+
+            const profilePluginRepo = profile.pluginRepositories.pluginRepository.filter(r => r.id == repositoryName)[0];
+            if(!profilePluginRepo) {
+                profile.pluginRepositories.pluginRepository.push({
+                    id: repositoryName,
+                    url
+                });
+                registerdNewRepos = true;
+            } else {
+                profilePluginRepo.url = url;
+            }
+
+            const server = conf.settings.servers.server.filter(s => s.id == repositoryName)[0];
+            if(!server) {
+                conf.settings.servers.server.push({
                     id: domainName,
                     username: `aws`,
                     password: token
                 })
             } else {
+                server.username = `aws`
                 server.password = token;
             }
         }
 
-        const profile = this.ensureSettingsProfile(settings, this.mavenProfile);
-
-        // Inejecting repositories
-        for (const repository of repositories) {
-            const profileRepo = profile.repositories.repository.filter(r => r.id == repository.name)[0];
-
-            const url = await this.getRepositoryEndpoint(repository.domainName!, repository.domainOwner, repository.name!)
-            if (!profileRepo) {
-                profile.repositories.repository.push({
-                    id: repository.name!,
-                    name: repository.domainName!,
-                    url
-                })
-            } else {
-                profileRepo.id = repository.name!;
-                profileRepo.name = repository.domainName!;
-                profileRepo.url = url;
-            }
+        const mavenProfileNotActive = !conf.settings.activeProfiles.activeProfile.filter(p => p == mavenProfile)[0];
+        const activateProfile = registerdNewRepos && mavenProfileNotActive;
+        if(activateProfile) {
+            conf.settings.activeProfiles.activeProfile.push(mavenProfile)
         }
-        await this.backupSettingFileIfNeeded();
-        this.saveSettings(settings);
 
-        const domainCount = Object.values(domains).length;
+        await this.backupSettingFileIfNeeded();
+        this.saveSettings(conf);
+
+
+
         const repositoryCount = Object.values(repositories).length;
-        return { domainCount, repositoryCount}
+        return { repositoryCount }
     }
 
     private getPaths() {
@@ -168,7 +210,7 @@ export class CodeArtifactMavenInjector {
             return;
 
         const { settingsDirectory, settingsFilePath } = this.getPaths();
-        const millis = new Date().getDate();
+        const millis = new Date().getTime();
         const backupFilePath = path.join(settingsDirectory, `settings.xml.${millis}.bak`)
         fs.copyFileSync(settingsFilePath, backupFilePath)
     }
@@ -182,7 +224,6 @@ export class CodeArtifactMavenInjector {
     private async ensureMavenConfigFile() {
         const settingsFilePath = this.ensureMavenSettingsFile();
         const xmlString = fs.readFileSync(settingsFilePath).toString();
-        const hasInjectionBanner = xmlString.includes(injectedBanner);
         return mavenXmlParser.parse(xmlString) as SettingsFile
     }
 
@@ -209,7 +250,7 @@ export class CodeArtifactMavenInjector {
         let profile = obj.settings.profiles.profile.filter(p => p.id === mavenProfileName)[0];
 
         if (!profile) {
-            profile = { id: mavenProfileName, repositories: { repository: [] } };
+            profile = { id: mavenProfileName, repositories: { repository: [] }, pluginRepositories: { pluginRepository: [] }};
             obj.settings.profiles.profile.push(profile);
         }
 
@@ -219,7 +260,23 @@ export class CodeArtifactMavenInjector {
         if (!profile.repositories.repository)
             profile.repositories.repository = []
 
+        if (!profile.pluginRepositories)
+            profile.pluginRepositories = { pluginRepository: [] }
+
+        if(!profile.pluginRepositories.pluginRepository)
+            profile.pluginRepositories.pluginRepository = []
+
         return profile;
+    }
+
+    private async generateDomainTokenCached(domain: string, domainOwner?: string) {
+        const cachedToken = this._tokenCache[domain];
+
+        if(cachedToken)
+            return cachedToken;
+
+        const generatedToken = await this.generateDomainToken(domain, domainOwner);
+        return this._tokenCache[domain] = generatedToken;
     }
 
     private async generateDomainToken(domain: string, domainOwner?: string) {
@@ -240,4 +297,3 @@ export class CodeArtifactMavenInjector {
         return result.repositoryEndpoint!;
     }
 }
-

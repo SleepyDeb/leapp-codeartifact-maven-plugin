@@ -23,6 +23,10 @@ module.exports = {
           to: './icon.png'
         },
         { 
+          from: 'README.md',
+          to: '.'
+        },
+        { 
           from: 'LICENSE',
           to: '.'
         },

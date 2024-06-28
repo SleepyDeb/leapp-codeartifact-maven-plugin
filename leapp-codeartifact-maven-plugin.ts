@@ -32,7 +32,7 @@ export class LeappCodeArtifactPlugin extends AwsCredentialsPlugin {
         return;
     }
 
-    const mavenProfile = process.env.AWS_MAVEN_PROFILE ?? 'default';
+    const mavenProfile = process.env.AWS_MAVEN_PROFILE ?? 'codeartifact';
     const sessionToken = credentials.sessionToken;
     const sdkCredentials = {
         accessKeyId: sessionToken.aws_access_key_id,
@@ -41,7 +41,7 @@ export class LeappCodeArtifactPlugin extends AwsCredentialsPlugin {
     };
     
     const injector = new CodeArtifactMavenInjector(sdkCredentials, session.region, mavenProfile);
-    const { domainCount, repositoryCount } = await injector.introspectAccountAndInject();
-    this.pluginEnvironment.log(`Injected maven profile: ${mavenProfile}, domains: ${domainCount}, repositories: ${repositoryCount}`, PluginLogLevel.info, true);
+    const { repositoryCount } = await injector.introspectAccountAndInject();
+    this.pluginEnvironment.log(`Injected maven profile: ${mavenProfile}, repositories: ${repositoryCount}`, PluginLogLevel.info, true);
   }
 }
