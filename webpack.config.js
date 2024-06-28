@@ -17,7 +17,15 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: './package.json',
-          to: `./package.json`}
+          to: `./package.json`},
+        { 
+          from: './icon.png',
+          to: './icon.png'
+        },
+        { 
+          from: 'LICENSE',
+          to: './LICENSE'
+        },
       ]
     })
   ],

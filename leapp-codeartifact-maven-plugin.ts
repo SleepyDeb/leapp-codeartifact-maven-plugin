@@ -11,7 +11,7 @@ export class LeappCodeArtifactPlugin extends AwsCredentialsPlugin {
   }
 
   get actionIcon(): string {
-    return "fa-play";
+    return "fas fa-play";
   }
 
   /*
