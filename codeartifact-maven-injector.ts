@@ -138,7 +138,7 @@ export class CodeArtifactMavenInjector {
             const server = conf.settings.servers.server.filter(s => s.id == repositoryName)[0];
             if(!server) {
                 conf.settings.servers.server.push({
-                    id: domainName,
+                    id: repositoryName,
                     username: `aws`,
                     password: token
                 })
