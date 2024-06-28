@@ -24,7 +24,7 @@ module.exports = {
         },
         { 
           from: 'LICENSE',
-          to: './LICENSE'
+          to: '.'
         },
       ]
     })
