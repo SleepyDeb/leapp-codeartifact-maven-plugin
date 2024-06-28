@@ -11,7 +11,7 @@ export class LeappCodeArtifactPlugin extends AwsCredentialsPlugin {
   }
 
   get actionIcon(): string {
-    return "fa-key-skeleton";
+    return "fa-play";
   }
 
   /*
@@ -24,22 +24,23 @@ export class LeappCodeArtifactPlugin extends AwsCredentialsPlugin {
         aws_access_key_id: string,
         aws_secret_access_key: string,
         aws_session_token: string
-    },
-
+    }
   }): Promise<void> {
-    
     const status = session.status;
     if(status != SessionStatus.active) {
         this.pluginEnvironment.log(`Can't start the plugin, session is not active.`, PluginLogLevel.error, true);
         return;
     }
+
     const mavenProfile = process.env.AWS_MAVEN_PROFILE ?? 'default';
+    const sessionToken = credentials.sessionToken;
+    const sdkCredentials = {
+        accessKeyId: sessionToken.aws_access_key_id,
+        secretAccessKey: sessionToken.aws_secret_access_key,
+        sessionToken: sessionToken.aws_session_token,
+    };
     
-    const injector = new CodeArtifactMavenInjector({
-        accessKeyId: credentials.sessionToken.aws_access_key_id,
-        secretAccessKey: credentials.sessionToken.aws_secret_access_key,
-        sessionToken: credentials.sessionToken.aws_session_token
-    }, mavenProfile);
+    const injector = new CodeArtifactMavenInjector(sdkCredentials, session.region, mavenProfile);
     const { domainCount, repositoryCount } = await injector.introspectAccountAndInject();
     this.pluginEnvironment.log(`Injected maven profile: ${mavenProfile}, domains: ${domainCount}, repositories: ${repositoryCount}`, PluginLogLevel.info, true);
   }

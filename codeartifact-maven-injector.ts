@@ -49,9 +49,10 @@ interface SettingsFile {
 export class CodeArtifactMavenInjector {
     private _client: codeartifact.CodeartifactClient;
 
-    constructor(credentials?: AwsCredentialIdentity, private mavenProfile: string = 'default') {
+    constructor(credentials?: AwsCredentialIdentity, region?: string, private mavenProfile: string = 'default') {
         this._client = new codeartifact.CodeartifactClient({
-            credentials
+            credentials,
+            region
         });
     }
 
