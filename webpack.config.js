@@ -8,9 +8,9 @@ const leappPluginDirectory = path.resolve(homedir(), `.Leapp/plugins/`, `${PACKA
 
 module.exports = env => ({
   mode: 'none',
-  entry: './plugin-index.ts',
+  entry: './src/plugin-index.ts',
   output: {
-    path: env.output === 'plugin' ? buildDirectory : leappPluginDirectory,
+    path: env.output === 'plugin' ? leappPluginDirectory : buildDirectory,
     filename: 'plugin.js',
     clean: true,
     library: {

@@ -61,7 +61,7 @@ export class CodeArtifactMavenInjector {
         [domainName: string]: string
     } = {}
 
-    constructor(credentials?: AwsCredentialIdentity, region?: string, private mavenProfile: string = 'codeartifact') {
+    constructor(private mavenProfile: string = 'codeartifact', credentials?: AwsCredentialIdentity, region?: string) {
         this._client = new codeartifact.CodeartifactClient({
             credentials,
             region
@@ -102,7 +102,7 @@ export class CodeArtifactMavenInjector {
         const mavenProfile = this.mavenProfile;
         const profile = this.ensureSettingsProfile(conf, this.mavenProfile);
 
-        let registerdNewRepos = false;
+        let newRepositoryCount = 0;
 
         // Inejecting repositories
         for (const repository of repositories) {
@@ -114,26 +114,33 @@ export class CodeArtifactMavenInjector {
             const token = await this.generateDomainTokenCached(domainName, domainOwner);
 
             const profileRepo = profile.repositories.repository.filter(r => r.id == repositoryName)[0];
-            if (!profileRepo) {
+            const profilePluginRepo = profile.pluginRepositories.pluginRepository.filter(r => r.id == repositoryName)[0];
+
+            // We add the repository as repository and pluginRepository only the first time
+            // in this manner the user will be able to delete one of the two entries and the injector
+            // will onor the user choice
+            const repositoryMissingAsRepoAndPluginRepo = !profileRepo && !profilePluginRepo;
+
+            if (repositoryMissingAsRepoAndPluginRepo) {
                 profile.repositories.repository.push({
                     id: repositoryName,
                     url
                 });
-                registerdNewRepos = true;
-            } else {
+                newRepositoryCount++;
+            } 
+            
+            if(!profileRepo)
                 profileRepo.url = url;
-            }
 
-            const profilePluginRepo = profile.pluginRepositories.pluginRepository.filter(r => r.id == repositoryName)[0];
-            if(!profilePluginRepo) {
+            if(repositoryMissingAsRepoAndPluginRepo) {
                 profile.pluginRepositories.pluginRepository.push({
                     id: repositoryName,
                     url
                 });
-                registerdNewRepos = true;
-            } else {
+            } 
+            
+            if(profilePluginRepo)
                 profilePluginRepo.url = url;
-            }
 
             const server = conf.settings.servers.server.filter(s => s.id == repositoryName)[0];
             if(!server) {
@@ -149,7 +156,7 @@ export class CodeArtifactMavenInjector {
         }
 
         const mavenProfileNotActive = !conf.settings.activeProfiles.activeProfile.filter(p => p == mavenProfile)[0];
-        const activateMavenProfile = registerdNewRepos && mavenProfileNotActive;
+        const activateMavenProfile = newRepositoryCount > 0 && mavenProfileNotActive;
         if(activateMavenProfile) {
             conf.settings.activeProfiles.activeProfile.push(mavenProfile)
         }
@@ -159,7 +166,7 @@ export class CodeArtifactMavenInjector {
         this.saveSettings(conf);
 
         const repositoryCount = Object.values(repositories).length;
-        return { repositoryCount, backupFilePath, activatedMavenProfile }
+        return { repositoryCount, newRepositoryCount, backupFilePath, activatedMavenProfile }
     }
 
     private getPaths() {

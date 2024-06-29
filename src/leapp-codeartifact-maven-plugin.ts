@@ -40,7 +40,7 @@ export class LeappCodeArtifactPlugin extends AwsCredentialsPlugin {
         sessionToken: sessionToken.aws_session_token,
     };
     
-    const injector = new CodeArtifactMavenInjector(sdkCredentials, session.region, mavenProfile);
+    const injector = new CodeArtifactMavenInjector(mavenProfile, sdkCredentials, session.region);
     const { repositoryCount } = await injector.introspectAccountAndInject();
 
     if(repositoryCount) {

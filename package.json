@@ -31,7 +31,8 @@
   },
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "build-local": "webpack --env=output='plugin' --config webpack.config.js"
+    "build-local": "webpack --env=output='plugin' --config webpack.config.js",
+    "inject": "ts-node ./src/inject-local.ts"
   },
   "files": [
     "plugin.js",
