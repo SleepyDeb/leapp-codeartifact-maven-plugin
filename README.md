@@ -26,16 +26,16 @@ The application will perform the following tasks:
 
 The plugin operates in an “append-only” mode, which means it won’t remove any deleted CodeArtifact repositories. In the event of an `id` collision, it will overwrite the related properties resource URL, username, or password.
 
-You can continue to freely manage the maven settings file on your own. The plugin will place the generated profile into the `activeProfile` section of the Maven Settings only the first time or when a new CodeArtifact repository is added to the configuration. This approach allows you to deactive the profile globally, and the plugin will inject the updated credentials without overriding your user choice.
+You can continue to manage the maven settings file on your own freely. The plugin will place the generated profile into the `activeProfile` section of the Maven Settings only the first time or when a new CodeArtifact repository is added to the configuration. This approach allows you to deactive the profile globally, and the plugin will inject the updated credentials without overriding your user choice.
 
-A similar behaviour have been implemented for the repository and pluginRepository profile section; if you delete one entry from only one of the two lists the plugin will not add it back, in this manner you will be able to mantain a repository only as pluginRepository or as standard repository as your need.
+A similar behavior has been implemented for the repository and pluginRepository profile section; if you delete one entry from only one of the two lists the plugin will not add it back, in this manner, you will be able to maintain a repository only as a pluginRepository or as a standard repository as your need.
 
 ## How to customize the plugin for your needs
 1. Clone this repository locally
 2. Install the dependencies `npm install`
 3. To build and install the plugin inside the Leapp application locally you can run `npm run build-local`
-4. Ensure to quit the Leapp application from the system tray before testing the plugin, if the plugin has already been loaded before the build the updated version will not be loaded
-5. Open the Leapp aplication, go to settings, ensure that the plugin is enabled
+4. Ensure you quit the Leapp application from the system tray before testing the plugin, if the plugin has already been loaded before the build the updated version will not be loaded
+5. Open the Leapp application, go to settings, and ensure that the plugin is enabled
 
 To test the execution locally without the Leapp application you can run the `inject` script,
 The inject script will use any default AWS SDK session configuration.
