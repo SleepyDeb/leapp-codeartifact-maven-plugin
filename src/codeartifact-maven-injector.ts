@@ -129,7 +129,7 @@ export class CodeArtifactMavenInjector {
                 newRepositoryCount++;
             } 
             
-            if(!profileRepo)
+            if(profileRepo)
                 profileRepo.url = url;
 
             if(repositoryMissingAsRepoAndPluginRepo) {
