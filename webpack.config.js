@@ -1,12 +1,16 @@
 const path = require('path');
 const PACKAGE = require('./package.json');
 const CopyPlugin = require("copy-webpack-plugin");
+const { homedir } = require('os');
 
-module.exports = {
+const buildDirectory = path.resolve(__dirname, `${PACKAGE.name}`);
+const leappPluginDirectory = path.resolve(homedir(), `.Leapp/plugins/`, `${PACKAGE.name}`);
+
+module.exports = env => ({
   mode: 'none',
   entry: './plugin-index.ts',
   output: {
-    path: path.resolve(__dirname, `${PACKAGE.name}`),
+    path: env.output === 'plugin' ? buildDirectory : leappPluginDirectory,
     filename: 'plugin.js',
     clean: true,
     library: {
@@ -46,4 +50,4 @@ module.exports = {
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
   },
-};
+});

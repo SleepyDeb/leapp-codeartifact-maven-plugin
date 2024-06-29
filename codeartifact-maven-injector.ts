@@ -1,9 +1,9 @@
 import * as codeartifact from '@aws-sdk/client-codeartifact';
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
+import { AwsCredentialIdentity } from "@smithy/types";
 import { homedir } from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
-import { AwsCredentialIdentity } from "@smithy/types";
 
 const injectedBannerText = 'this file have been injected by the leapp-codeartifact-maven-plugin';
 const injectedBanner = `<!-- ${injectedBannerText} -->`;
@@ -149,18 +149,17 @@ export class CodeArtifactMavenInjector {
         }
 
         const mavenProfileNotActive = !conf.settings.activeProfiles.activeProfile.filter(p => p == mavenProfile)[0];
-        const activateProfile = registerdNewRepos && mavenProfileNotActive;
-        if(activateProfile) {
+        const activateMavenProfile = registerdNewRepos && mavenProfileNotActive;
+        if(activateMavenProfile) {
             conf.settings.activeProfiles.activeProfile.push(mavenProfile)
         }
+        const activatedMavenProfile = activateMavenProfile ? mavenProfile : undefined;
 
-        await this.backupSettingFileIfNeeded();
+        const { backupFilePath } = await this.backupSettingFileIfNeeded();
         this.saveSettings(conf);
 
-
-
         const repositoryCount = Object.values(repositories).length;
-        return { repositoryCount }
+        return { repositoryCount, backupFilePath, activatedMavenProfile }
     }
 
     private getPaths() {
@@ -191,12 +190,15 @@ export class CodeArtifactMavenInjector {
         const currentConfig = await this.ensureMavenConfigFile();
         const haveBeenInjected = currentConfig.settings?.[commentPropName]?.includes(injectedBannerText);
         if(haveBeenInjected)
-            return;
+            return { };
 
         const { settingsDirectory, settingsFilePath } = this.getPaths();
         const millis = new Date().getTime();
         const backupFilePath = path.join(settingsDirectory, `settings.xml.${millis}.bak`)
         fs.copyFileSync(settingsFilePath, backupFilePath)
+
+        const shortBackupFilePath = backupFilePath.replace(homedir(), '~');
+        return { backupFilePath: shortBackupFilePath };
     }
 
     private async saveSettings(settingsFile: SettingsFile) {

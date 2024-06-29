@@ -41,7 +41,20 @@ export class LeappCodeArtifactPlugin extends AwsCredentialsPlugin {
     };
     
     const injector = new CodeArtifactMavenInjector(sdkCredentials, session.region, mavenProfile);
-    const { repositoryCount } = await injector.introspectAccountAndInject();
-    this.pluginEnvironment.log(`Injected maven profile: ${mavenProfile}, repositories: ${repositoryCount}`, PluginLogLevel.info, true);
+    const { repositoryCount, activatedMavenProfile, backupFilePath } = await injector.introspectAccountAndInject();
+
+    const resultMessages = [];
+
+    if(backupFilePath)
+      resultMessages.push(`Backup Created: ${backupFilePath}.`);
+
+    if(activatedMavenProfile)
+      resultMessages.push(`Maven pofile '${activatedMavenProfile}' have been activated`);
+
+    if(repositoryCount) {
+      resultMessages.push(`Injected maven profile: ${mavenProfile}, repositories: ${repositoryCount}`)
+      this.pluginEnvironment.log(resultMessages.join(', '), PluginLogLevel.info, true);
+    } else
+      this.pluginEnvironment.log(`No repositories have been found on the selected profile. (Session: ${session.sessionName} Region: ${session.region})`, PluginLogLevel.warn, true);
   }
 }
