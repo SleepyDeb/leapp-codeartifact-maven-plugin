@@ -8,7 +8,7 @@
     "type": "git",
     "url": "git+https://github.com/SleepyDeb/leapp-codeartifact-maven-plugin.git"
   },
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "This plugin autogenerates CodeArtifact Maven credentials",
   "keywords": [
     "leapp-plugin",
