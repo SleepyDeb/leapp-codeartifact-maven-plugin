@@ -18,7 +18,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
 
@@ -29,6 +29,7 @@ jobs:
         cd ./leapp-codeartifact-maven-plugin
         npm pack
     - uses: actions/upload-artifact@v4
+      name: leapp-codeartifact-maven-plugin
       with:
         path: ./leapp-codeartifact-maven-plugin/*.tgz
         
