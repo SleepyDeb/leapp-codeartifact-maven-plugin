@@ -1,8 +1,8 @@
 # Leap CodeArtifact Plugin
-The Leap CodeArtifact Plugin is designed to simplify the process of injecting CodeArtifact Maven repository credentials into the Maven settings file `(~/.m2/settings.xml)`. “It uses the selected Leapp session to retrieve the information and credentials from the AWS account.
+The Leap CodeArtifact Plugin is designed to simplify the process of injecting CodeArtifact Maven repository credentials into the Maven settings file `(~/.m2/settings.xml)`. It uses the selected Leapp session to retrieve the information and credentials from the AWS account.
 
 # Features
-- **Account Introspection:** It lists CodeArtifact domains amd repositories
+- **Account Introspection:** It lists CodeArtifact repositories
 - **Credentials Injection:** It injects the maven configuration generating a new set of credentials automatically
 
 # Installation
@@ -10,7 +10,7 @@ The Leap CodeArtifact Plugin is designed to simplify the process of injecting Co
 2. Add the package by specifying: `leapp-codeartifact-plugin`
 That's it! The plugin will be installed and ready to use.
 
-To customize the injected Maven profile, set the `AWS_MAVEN_PROFILE` environment variable. Otherwise, the `default` profile will be used.
+To customize the injected Maven profile, set the `AWS_MAVEN_PROFILE` environment variable. Otherwise, the `codeartifact` profile will be used.
 
 # Usage
 1. **Right-Click on an AWS Active Session**
