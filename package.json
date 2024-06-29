@@ -44,6 +44,9 @@
     "@noovolari/leapp-core": "0.1.165",
     "fast-xml-parser": "^4.4.0"
   },
+  "overrides": {
+    "follow-redirects": "^1.15.6"
+  },
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",
     "path-browserify": "^1.0.1",

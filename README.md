@@ -12,6 +12,9 @@ That's it! The plugin will be installed and ready to use.
 
 To customize the injected Maven profile, set the `AWS_MAVEN_PROFILE` environment variable. Otherwise, the `codeartifact` profile will be used. (after you do, restart the Leapp application)
 
+[![Create Bundle](https://github.com/SleepyDeb/leapp-codeartifact-maven-plugin/actions/workflows/webpack.yml/badge.svg)](https://github.com/SleepyDeb/leapp-codeartifact-maven-plugin/actions/workflows/webpack.yml)
+
+
 ## Usage
 1. **Right-Click on an AWS Active Session**
 2. **Select "Inject CodeArtifact Credentials"**
