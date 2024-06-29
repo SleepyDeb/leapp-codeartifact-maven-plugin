@@ -1,6 +1,9 @@
 # Leap CodeArtifact Plugin
 The Leap CodeArtifact Plugin is designed to simplify the process of injecting CodeArtifact Maven repository credentials into the Maven settings file `(~/.m2/settings.xml)`. It uses the selected Leapp session to retrieve the information and credentials from the AWS account.
 
+[![View this project on NPM](https://img.shields.io/npm/v/leapp-codeartifact-maven-plugin.svg)](https://npmjs.org/package/leapp-codeartifact-maven-plugin)
+[![Dependabot Updates](https://github.com/SleepyDeb/leapp-codeartifact-maven-plugin/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/SleepyDeb/leapp-codeartifact-maven-plugin/actions/workflows/dependabot/dependabot-updates) [![Create Bundle](https://github.com/SleepyDeb/leapp-codeartifact-maven-plugin/actions/workflows/webpack.yml/badge.svg)](https://github.com/SleepyDeb/leapp-codeartifact-maven-plugin/actions/workflows/webpack.yml)
+
 ## Features
 - **Account Introspection:** It lists CodeArtifact repositories
 - **Credentials Injection:** It injects the maven configuration generating a new set of credentials automatically for each repository
@@ -11,9 +14,6 @@ The Leap CodeArtifact Plugin is designed to simplify the process of injecting Co
 That's it! The plugin will be installed and ready to use.
 
 To customize the injected Maven profile, set the `AWS_MAVEN_PROFILE` environment variable. Otherwise, the `codeartifact` profile will be used. (after you do, restart the Leapp application)
-
-[![Create Bundle](https://github.com/SleepyDeb/leapp-codeartifact-maven-plugin/actions/workflows/webpack.yml/badge.svg)](https://github.com/SleepyDeb/leapp-codeartifact-maven-plugin/actions/workflows/webpack.yml)
-
 
 ## Usage
 1. **Right-Click on an AWS Active Session**
