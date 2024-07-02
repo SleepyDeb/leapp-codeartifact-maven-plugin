@@ -22,7 +22,7 @@ The session must be already active!
 ## Application Behavior:
 The application will perform the following tasks:
 1. Detect all CodeArtifact repositories associated with the selected session (credentials\region).
-2. Back up the existing user-defined file if have not been injected yet `(~/.m2/settings.xml.xxxx.bak)`.
+2. Backup the existing user-defined file if have not been injected yet `(~/.m2/settings.xml.xxxx.bak)`.
 3. For each CodeArtifact repository, the plugin will inject a server definition into the Maven configuration settings with the updated access token.
 4. Will generate a Maven profile and for each CodeArtifact repository will inject both a maven repository and a mavenPlugin repository entry.
 
