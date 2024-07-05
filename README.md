@@ -9,7 +9,7 @@ The Leap CodeArtifact Plugin is designed to simplify the process of injecting Co
 
 ## Installation
 1. Open the Settings menu in your Leapp session.
-2. Add the package by specifying: `leapp-codeartifact-plugin`
+2. Add the package by specifying: `leapp-codeartifact-maven-plugin`
 That's it! The plugin will be installed and ready to use.
 
 To customize the injected Maven profile, set the `AWS_MAVEN_PROFILE` environment variable. Otherwise, the `codeartifact` profile will be used. (after you do, restart the Leapp application)
