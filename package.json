@@ -42,7 +42,7 @@
   "dependencies": {
     "@aws-sdk/client-codeartifact": "^3.602.0",
     "@noovolari/leapp-core": "0.1.165",
-    "fast-xml-parser": "^4.4.0"
+    "fast-xml-parser": "^5.0.8"
   },
   "overrides": {
     "follow-redirects": "^1.15.6"
